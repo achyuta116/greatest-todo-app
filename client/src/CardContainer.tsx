@@ -9,49 +9,54 @@ export type Item = {
 }
 
 const CardContainer = () => {
-
 	const [desc, setDesc] = useState<string>('')
 
 	const [items, setItems] = useState<Item[]>([])
-    const { data, isLoading, refetch } = trpc.readAllItems.useQuery()
-    const updateItem = trpc.updateItem.useMutation()
-    const deleteItem = trpc.deleteItem.useMutation()
-    const updateItemState = trpc.updateItemState.useMutation()
-    const addItem = trpc.addItem.useMutation()
-    useEffect(() => {
-        if (data) {
-            setItems(data)
-        }
-    }, [data])
+	const { data, isLoading, refetch } = trpc.readAllItems.useQuery()
+	const updateItem = trpc.updateItem.useMutation()
+	const deleteItem = trpc.deleteItem.useMutation({
+		onSuccess: () => refetch(),
+	})
+	const updateItemState = trpc.updateItemState.useMutation({
+		onSuccess: () => refetch(),
+	})
+	const addItem = trpc.addItem.useMutation({
+		onSuccess: () => refetch(),
+	})
+	useEffect(() => {
+		if (data) {
+			setItems(data)
+		}
+	}, [data])
 
-    if (isLoading)  {
-        console.log(data)
-        return <div>Loading...</div>
-    }
+	if (isLoading) {
+		console.log(data)
+		return <div>Loading...</div>
+	}
 
-	const handleKeyPress = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+	const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key == 'Enter' && desc.trim() != '') {
-            addItem.mutate(desc)
-            await refetch()
+			addItem.mutate(desc)
 			setDesc('')
 		}
 	}
 
 	const moveToState = (state: 'COMPLETE' | '' | 'IN_PROGRESS', id: number) => {
 		if (state === '') {
-            console.log("deleted", id)
-            deleteItem.mutate(id)
-            const filteredItems = items.filter(e => e.id !== id)
-            setItems(filteredItems)
+			console.log('deleted', id)
+			deleteItem.mutate(id)
+			const filteredItems = items.filter((e) => e.id !== id)
+			setItems(filteredItems)
 			return
 		}
 		let temp: Item[] = []
 		for (let i = 0; i < items.length; i += 1) {
 			if (items[i].id === id) {
-                console.log("updated state", id)
-                updateItemState.mutate({
-                    id, state
-                })
+				console.log('updated state', id)
+				updateItemState.mutate({
+					id,
+					state,
+				})
 				items[i].state = state
 			}
 			temp.push(items[i])
