@@ -5,14 +5,16 @@ import { trpc } from './utils/trpc'
 export type Item = {
 	desc: string
 	id: number
-	state: 'COMPLETE' | 'INCOMPLETE' | 'IN_PROGRESS'
+	state: 'COMPLETE' | 'INCOMPLETE' | 'INPROGRESS'
 }
 
 const CardContainer = () => {
 	const [desc, setDesc] = useState<string>('')
+    const [username, setUsername] = useState<string>('')
+    const [password, setPassword] = useState<string>('')
 
 	const [items, setItems] = useState<Item[]>([])
-	const { data, isLoading, refetch } = trpc.readAllItems.useQuery()
+	const { data, isLoading, refetch } = trpc.readAllItems.useQuery({ username })
 	const updateItem = trpc.updateItem.useMutation()
 	const deleteItem = trpc.deleteItem.useMutation({
 		onSuccess: () => refetch(),
@@ -41,7 +43,7 @@ const CardContainer = () => {
 		}
 	}
 
-	const moveToState = (state: 'COMPLETE' | '' | 'IN_PROGRESS', id: number) => {
+	const moveToState = (state: 'COMPLETE' | '' | 'INPROGRESS', id: number) => {
 		if (state === '') {
 			console.log('deleted', id)
 			deleteItem.mutate(id)
@@ -85,7 +87,7 @@ const CardContainer = () => {
 						{items
 							.filter((e) => e.state == 'INCOMPLETE')
 							.map((e) => (
-								<div onClick={(_) => moveToState('IN_PROGRESS', e.id)}>
+								<div onClick={(_) => moveToState('INPROGRESS', e.id)}>
 									<Card desc={e.desc} key={e.id} id={e.id} state={e.state} />
 								</div>
 							))}
@@ -98,7 +100,7 @@ const CardContainer = () => {
 					</div>
 					<div className='w-72 h-[60vh] overflow-y-scroll my-auto'>
 						{items
-							.filter((e) => e.state == 'IN_PROGRESS')
+							.filter((e) => e.state == 'INPROGRESS')
 							.map((e) => (
 								<div onClick={(_) => moveToState('COMPLETE', e.id)}>
 									<Card desc={e.desc} key={e.id} id={e.id} state={e.state} />

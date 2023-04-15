@@ -10,10 +10,20 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
+model User {
+    userid   String     @id @default(cuid())
+    TodoItem TodoItem[]
+    username String @unique
+    pwd String
+}
+
 model TodoItem {
-    id  Int  @id @default(autoincrement())
-    desc String 
-    state  State @default(INCOMPLETE)
+    userid String
+    id     Int     @default(autoincrement())
+    desc   String
+    state  State   @default(INCOMPLETE)
+    User   User?   @relation(fields: [userid], references: [userid])
+    @@id([userid, id])
 }
 
 enum State {
